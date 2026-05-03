@@ -1,4 +1,7 @@
 # RenameFromList
+*By Andreas Aakvik Gogstad 2026*
+
+https://github.com/snjo/RenameFromList
 
 Renames files in a directory based on a CSV list. Entries should be listed without extensions.
 All matching files will be renamed / overwritten, of any file type.
