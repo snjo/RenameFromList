@@ -18,6 +18,7 @@ namespace RenameFromList
         static string? inputDirectory = null;
         static string? outputDirectory = null;
         static bool deleteOldFile = true;
+        static bool overWrite = true;
 
         static void Main(string[] args)
         {
@@ -161,12 +162,29 @@ namespace RenameFromList
                         try
                         {
                             outputDirectory = inputDirectory; // TODO
-                            File.Copy(file, Path.Combine(outputDirectory, newFileNameWithExtension), true);
-                            if (deleteOldFile)
+                            string outfile = Path.Combine(outputDirectory, newFileNameWithExtension);
+
+                            if (File.Exists(outfile))
                             {
-                                File.Delete(file);
+                                if (overWrite)
+                                {
+                                    ColoredWriteline($"File already exists {newFileNameWithExtension}, overwriting it.", ColorWarning);
+                                    File.Copy(file, outfile, true);
+                                    if (deleteOldFile)
+                                    {
+                                        File.Delete(file);
+                                        ColoredWriteline($"Renamed {Path.GetFileName(file)} to {newFileNameWithExtension}", ColorSuccess);
+                                    }
+                                    else
+                                    {
+                                        ColoredWriteline($"Copied {Path.GetFileName(file)} to {newFileNameWithExtension}", ColorSuccess);
+                                    }
+                                }
+                                else
+                                {
+                                    ColoredWriteline($"File already exists {newFileNameWithExtension}, skipping it.", ColorWarning);
+                                }
                             }
-                            ColoredWriteline($"Renamed {Path.GetFileName(file)} to {newFileNameWithExtension}", ColorSuccess);
                         }
                         catch (Exception ex)
                         {
@@ -258,10 +276,8 @@ namespace RenameFromList
                             break;
                         case "strict":
                             matchPartialNames = false;
-                            ColoredWriteline($"Match mode: Will match full file names (String.Equals)", ColorDefaultForeground);
                             break;
                         case "loose":
-                            ColoredWriteline($"Match mode: Will match partial file names (String.Contains)", ColorDefaultForeground);
                             matchPartialNames = true;
                             break;
                         case "keep":
@@ -273,6 +289,10 @@ namespace RenameFromList
                             break;
                         case "nodel":
                             deleteOldFile = false;
+                            break;
+                        case "noow":
+                        case "nooverwrite";
+                            overWrite = false;
                             break;
                         default:
                             ColoredWriteline("Invalid argument passed: /" + commandType, ColorWarning);
@@ -330,6 +350,11 @@ namespace RenameFromList
 
             ColoredWriteline("/nodel", ColorHighlight);
             Console.WriteLine("   Don't delete the old files (Copies files)");
+            Console.WriteLine("");
+
+            ColoredWriteline("/noow     /nooverwrite", ColorHighlight);
+            Console.WriteLine("   Don't overwrite file if it already exists. By default files are overwritten.");
+            Console.WriteLine("   If the file exists and can't be overwritten, the original file is not deleted.");
             Console.WriteLine("");
 
             Console.WriteLine("");
