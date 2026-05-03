@@ -4,20 +4,28 @@ namespace RenameFromList
 {
     internal class Program
     {
-        static ConsoleColor defaultForegroundColor = ConsoleColor.Cyan;
+        static ConsoleColor ColorDefaultForeground = ConsoleColor.Cyan;
+        static ConsoleColor ColorHighlight = ConsoleColor.Cyan;
+        static ConsoleColor ColorExample = ConsoleColor.DarkCyan;
+        static ConsoleColor ColorWarning = ConsoleColor.Yellow;
+        static ConsoleColor ColorError = ConsoleColor.Red;
+        static ConsoleColor ColorSuccess = ConsoleColor.Green;
+        static bool matchPartialNames = false;
+        static bool keepSuffix = false;
+        static string separator = ",";
+        static string? splitSymbol = null;
+        static string? csvFile = null;
+        static string? inputDirectory = null;
+        static string? outputDirectory = null;
+        static bool deleteOldFile = true;
+
         static void Main(string[] args)
         {
             // ARGUMENTS:
             // RENAMEFROMLIST [csv filename] [csv separator] [filename split symbol]
 
-            defaultForegroundColor = Console.ForegroundColor;
-            ConsoleColor highlight = ConsoleColor.Cyan;
-            ConsoleColor example = ConsoleColor.DarkCyan;
-            ConsoleColor warning = ConsoleColor.Yellow;
-            ConsoleColor error = ConsoleColor.Red;
-            ConsoleColor success = ConsoleColor.Green;
+            ColorDefaultForeground = Console.ForegroundColor;
 
-            string separator = ",";
             if (args.Length == 0)
             {
                 Console.WriteLine("No CSV file specified, please add the filename as the first argument");
@@ -25,80 +33,63 @@ namespace RenameFromList
                 Environment.Exit(1);
             }
 
-            if (args[0] == "/?")
+            string firstArg = args[0].ToLower();
+
+            if (firstArg == "/?"    || firstArg == "-?"    || firstArg == "--?" ||
+                firstArg == "/help" || firstArg == "-help" || firstArg == "--help" ||
+                firstArg == "/h"    || firstArg == "-h"    || firstArg == "--h")
             {
-                Console.WriteLine("");
-                Console.WriteLine("Renames files in a directory based on a CSV list. Entries should be listed without extensions.");
-                Console.WriteLine("All matching files will be renamed / overwritten, of any file type.");
-                Console.WriteLine("");
-                ColoredWriteline ("RENAMEFROMLIST [csv filename] [csv separator character] [filename split symbol]", success);
-                Console.WriteLine("");
-
-                ColoredWrite     ("csv separator", highlight);
-                ColoredWriteline ("            Defaults to comma. Optional if split symbol argument isn't used.", defaultForegroundColor);
-                Console.WriteLine("");
-                ColoredWrite     ("filename split symbol", highlight);
-                ColoredWriteline ("    Optional. Files in the directory will be matched using", defaultForegroundColor);
-                Console.WriteLine("                         the part of the name before the sybmol.");
-                Console.WriteLine("                         Ex: If the symbol is _, F01_01.pdf will be treated as F01.pdf");
-
-                Console.WriteLine("");
-                ColoredWriteline ("Example input csv", highlight);
-                ColoredWriteline ("OLDNAME,NEWNAME", example);
-                ColoredWriteline ("workfile-AA,delivery-AA", example);
-                ColoredWriteline ("workfile-BB,delivery-BB", example);
-                Console.WriteLine("");
-                ColoredWriteline ("Rename result, using split symbol argument _:", highlight);
-                ColoredWriteline ("RENAMEFROMLIST.EXE example.csv , _", example);
-                ColoredWriteline ("workfile-AA.docx        > delivery-AA.docx", example);
-                ColoredWriteline ("workfile-AA.pdf         > delivery-AA.pdf", example);
-                ColoredWriteline ("workfile-BB_1234567.txt > delivery-BB.txt", example);
-                Console.WriteLine("");
+                ShowHelpInfo();
                 Environment.Exit(0);
             }
-
-            string csvFile = args[0];
-
-            if (args.Length >= 2)
+            else
             {
-                separator = args[1];
-                Console.WriteLine($"Separator symbol set to: {separator}");
+                ProcessArguments(args);
             }
 
-            string? splitSymbol = null;
-            if (args.Length >= 3)
+            if (csvFile == null && firstArg.StartsWith('/') == false)
             {
-                splitSymbol = args[2];
-                Console.WriteLine($"Split symbol set to: {splitSymbol}");
+                ColoredWriteline($"Assuming first argument is file name {firstArg}", ColorHighlight);
+                csvFile = firstArg;
             }
 
-
-            Console.WriteLine($"Loading file {csvFile}");
-            if (File.Exists(csvFile) == false)
+            if (csvFile == null)
             {
-                ColoredWriteline($"File not found: {csvFile}", error);
+                ColoredWriteline($"No CSV file specified, use /f FILE.CSV", ColorError);
                 Environment.Exit(1);
             }
+
+            if (File.Exists(csvFile) == false)
+            {
+                ColoredWriteline($"File not found: {csvFile}", ColorError);
+                Environment.Exit(1);
+            }
+
+            Console.WriteLine($"Loading file {csvFile}");
 
             string[] csvLines = File.ReadAllLines(csvFile);
 
             int count = 0;
 
-            string directory = Path.GetFullPath(".")+"";
-            Debug.WriteLine($"Current directory: {directory}");
+            if (inputDirectory == null)
+            {
+                inputDirectory = Path.GetFullPath(".") + "";
+            }
+            Debug.WriteLine($"Current directory: {inputDirectory}");
 
-            string[] filesInDirectory = Directory.GetFiles(directory);
-            Console.WriteLine($"Found {filesInDirectory.Length} in the directory");
+            string[] filesInDirectory = Directory.GetFiles(inputDirectory);
+            Console.WriteLine($"Found {filesInDirectory.Length} files in the directory");
+
 
             foreach (string line in csvLines)
             {
                 count++;
                 Console.WriteLine();
-                ColoredWriteline($"{count:00} : {line}", highlight);
+                ColoredWriteline($"{count:00} : {line}", ColorHighlight);
                 string[] split = line.Split(separator);
                 if (split.Length < 2)
                 {
-                    ColoredWriteline($"Error, expecting 2 values on line {count}, found {split.Length}, skipping line", error);
+                    ColoredWriteline($"Error, expecting 2 values on line {count}, found {split.Length}, skipping line", ColorError);
                     continue;
                 }
                 string originalName = split[0];
@@ -111,49 +102,251 @@ namespace RenameFromList
                 foreach (string file in filesInDirectory)
                 {
                     string foundFileNoExtension = Path.GetFileNameWithoutExtension(file);
-                    
+                    string splitsuffix = "";
                     string extension = Path.GetExtension(file);
 
                     //Console.WriteLine($"     Check file: {file}");
-                    Debug.WriteLine($"     without extension: {foundFileNoExtension}");
+                    //Console.WriteLine($"     without extension: {foundFileNoExtension}");
                     //Console.WriteLine($"     extension: {extension}");
 
                     if (splitSymbol != null)
                     {
-                        foundFileNoExtension = foundFileNoExtension.Split(splitSymbol)[0];
-                        Debug.WriteLine($"Using split, new value: {foundFileNoExtension}");
+                        int splitLocation = foundFileNoExtension.IndexOf(splitSymbol);
+                        if (splitLocation >= 0)
+                        {
+                            if (keepSuffix)
+                            {
+                                splitsuffix = foundFileNoExtension[splitLocation..];
+                            }
+                            foundFileNoExtension = foundFileNoExtension[..splitLocation];
+                        }
+                        
+                        //Console.WriteLine($"Using split, new value: {foundFileNoExtension}, suffix {splitsuffix} ''");
                     }
 
-                    if (originalName == foundFileNoExtension)
+                    bool matchFound = false;
+                    if (matchPartialNames)
+                    {
+                        if (foundFileNoExtension.Contains(originalName))
+                        {
+                            matchFound = true;
+                        }
+                    }
+                    else
+                    {
+                        if (foundFileNoExtension.Equals(originalName))
+                        {
+                            matchFound = true;
+                        }
+                    }
+
+                    if (matchFound)
                     {
                         matchesCount++;
                         Debug.WriteLine($"Found match in list: {foundFileNoExtension}, extension {extension}");
-                        string newFileNameWithExtension = newName + extension;
+                        string newFileNameWithExtension;
+                        if (matchPartialNames)
+                        {
+                            newFileNameWithExtension = foundFileNoExtension.Replace(originalName, newName) + extension;
+                        }
+                        else
+                        {
+                            newFileNameWithExtension = newName + splitsuffix + extension;
+                        }
 
                         try
                         {
-                            File.Copy(file, newFileNameWithExtension, true);
-                            File.Delete(file);
-                            ColoredWriteline($"Renamed {foundFileNoExtension + extension} to {newFileNameWithExtension}", success);
+                            outputDirectory = inputDirectory; // TODO
+                            File.Copy(file, Path.Combine(outputDirectory, newFileNameWithExtension), true);
+                            if (deleteOldFile)
+                            {
+                                File.Delete(file);
+                            }
+                            ColoredWriteline($"Renamed {Path.GetFileName(file)} to {newFileNameWithExtension}", ColorSuccess);
                         }
                         catch (Exception ex)
                         {
-                            ColoredWriteline($"Error: {ex.Message}", error);
+                            ColoredWriteline($"Error: {ex.Message}", ColorError);
                         }
                     }
                 }
 
-                ColoredWriteline($"Found {matchesCount} matches for {originalName}", defaultForegroundColor);
+                ColoredWriteline($"Found {matchesCount} matches for {originalName}", ColorDefaultForeground);
                 
             }
 
+        }
+
+        private static void ProcessArguments(string[] commandLineArgs)
+        {
+            for (int i = 0; i < commandLineArgs.Length; i++)
+            {
+                string currentArg = commandLineArgs[i];
+                if (currentArg == string.Empty)
+                {
+                    ColoredWriteline("Zero length argument in position " + i + ", skipped.", ColorWarning);
+                    continue;
+                }
+                string firstChar = currentArg.Substring(0, 1);
+                if ((firstChar == "-") || (firstChar == "/"))
+                {
+                    string commandType = currentArg.Substring(1);
+                    string? commandValue = null;
+                    if (i + 1 < commandLineArgs.Length)
+                    {
+                        // if the next argument exists, and starts with a / or -, it's a new argument, not the value for the current argument
+                        commandValue = commandLineArgs[i + 1];
+                        if (commandValue == string.Empty)
+                        {
+                            ColoredWriteline("Zero length sub-argument to " + currentArg, ColorWarning);
+                            commandValue = null;
+                        }
+                        else
+                        {
+                            string firstCharValue = commandValue.Substring(0, 1);
+                            if ((firstCharValue == "-") || (firstCharValue == "/"))
+                            {
+                                commandValue = null;
+                            }
+                        }
+
+                    }
+
+                    commandType = commandType.ToLower();
+
+                    switch (commandType)
+                    {
+                        case "f":
+                        case "file":
+                        case "csv":
+                            csvFile = commandValue;
+                            ColoredWriteline($"CSV file: {commandValue}", ColorDefaultForeground);
+                            break;
+                        case "d":
+                        case "directory":
+                        case "folder":
+                            inputDirectory = commandValue;
+                            if (inputDirectory != null)
+                            {
+                                ColoredWriteline($"Will rename files in directory: {Path.GetFullPath(inputDirectory)}", ColorDefaultForeground);
+                            }
+                            else
+                            {
+                                ColoredWriteline($"Warning: No directory specified after /d",ColorWarning);
+                            }
+                            break;
+                        case "cs":
+                        case "separator":
+                            if (commandValue != null)
+                            {
+                                separator = commandValue;
+                                ColoredWriteline($"Separator set to '{separator}'", ColorDefaultForeground);
+                            }
+                            else
+                            {
+                                ColoredWriteline("No value specified for separator", ColorWarning);
+                            }
+                            break;
+                        case "sp":
+                        case "split":
+                            splitSymbol = commandValue;
+                            ColoredWriteline($"Suffix split symbol set to '{splitSymbol}'", ColorDefaultForeground);
+                            break;
+                        case "strict":
+                            matchPartialNames = false;
+                            ColoredWriteline($"Match mode: Will match full file names (String.Equals)", ColorDefaultForeground);
+                            break;
+                        case "loose":
+                            ColoredWriteline($"Match mode: Will match partial file names (String.Contains)", ColorDefaultForeground);
+                            matchPartialNames = true;
+                            break;
+                        case "keep":
+                        case "keepsuffix":
+                            keepSuffix = true;
+                            break;
+                        case "del":
+                            deleteOldFile = true;
+                            break;
+                        case "nodel":
+                            deleteOldFile = false;
+                            break;
+                        default:
+                            ColoredWriteline("Invalid argument passed: /" + commandType, ColorWarning);
+                            Environment.Exit(0);
+                            break;
+                    }
+                }
+            }
+        }
+
+        private static void ShowHelpInfo()
+        {
+            Console.WriteLine("");
+            Console.WriteLine("Renames files in a directory based on a CSV list. Entries should be listed without extensions.");
+            Console.WriteLine("All matching files will be renamed / overwritten, of any file type.");
+            Console.WriteLine("");
+
+            ColoredWriteline("RENAMEFROMLIST [file.csv] [/f file.csv] [/d directory] [/cs ,] [/sp _] [/strict or /loose] [/keep]", ColorSuccess);
+            Console.WriteLine("");
+
+            ColoredWriteline ("/f       /file       /csv", ColorHighlight);
+            Console.WriteLine("   CSV file containing a list of name pairs to rename from and to (OLD,NEW)");
+            Console.WriteLine("");
+
+            ColoredWriteline ("/d       /directory  /folder", ColorHighlight);
+            Console.WriteLine("   The folder containing the renamable files. Defaults to the working directory");
+            Console.WriteLine("");
+
+            ColoredWriteline ("/cs      /separator", ColorHighlight);
+            Console.WriteLine("   Symbol used in the CSV to separate values, Default is comma");
+            Console.WriteLine("");
+
+            ColoredWriteline ("/sp      /split", ColorHighlight);
+            Console.WriteLine("   Split Symbol, used in file names to indicate a suffix, will match files with the first part of the name,\n" +
+                              "   ignoring the suffix" +
+                              "   Ex: If the symbol is _, F01_01.pdf will be treated as F01.pdf");
+            Console.WriteLine("");
+
+            ColoredWriteline ("/loose", ColorHighlight);
+            Console.WriteLine("   Will match and replace any file containing the OLD name with the NEW name, keeping any prefix and suffix\n" +
+                              "   (split symbol is ignored)");
+            Console.WriteLine("");
+
+            ColoredWriteline("/strict", ColorHighlight);
+            Console.WriteLine("   Will only match files using the exact name (split symbols can be used)");
+            Console.WriteLine("");
+
+            ColoredWriteline ("/keep    /keepsuffix", ColorHighlight);
+            Console.WriteLine("   Keep any suffixes from the Split Symbol while using Strict match mode");
+            Console.WriteLine("");
+
+            ColoredWriteline("/del", ColorHighlight);
+            Console.WriteLine("   Deletes the old files (Renames files)");
+            Console.WriteLine("");
+
+            ColoredWriteline("/nodel", ColorHighlight);
+            Console.WriteLine("   Don't delete the old files (Copies files)");
+            Console.WriteLine("");
+
+            Console.WriteLine("");
+            ColoredWriteline("Example input csv", ColorHighlight);
+            ColoredWriteline("OLDNAME,NEWNAME", ColorExample);
+            ColoredWriteline("workfile-AA,delivery-AA", ColorExample);
+            ColoredWriteline("workfile-BB,delivery-BB", ColorExample);
+            Console.WriteLine("");
+            ColoredWriteline("Rename result, using split symbol argument _:", ColorHighlight);
+            ColoredWriteline("RENAMEFROMLIST.EXE example.csv , _", ColorExample);
+            ColoredWriteline("workfile-AA.docx        > delivery-AA.docx", ColorExample);
+            ColoredWriteline("workfile-AA.pdf         > delivery-AA.pdf", ColorExample);
+            ColoredWriteline("workfile-BB_1234567.txt > delivery-BB.txt", ColorExample);
+            Console.WriteLine("");
         }
 
         private static void ColoredWrite(string message, ConsoleColor color)
         {
             Console.ForegroundColor = color;
             Console.Write(message);
-            Console.ForegroundColor = defaultForegroundColor;
+            Console.ForegroundColor = ColorDefaultForeground;
         }
 
         private static void ColoredWriteline(string message, ConsoleColor color)
