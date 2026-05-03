@@ -37,6 +37,10 @@ RENAMEFROMLIST [file.csv] [/f file.csv] [/d directory] [/cs ,] [/sp _] [/strict 
 	/nodel
 	   Don't delete the old files (Copies files)
 
+	/noow    /nooverwrite
+	   Don't overwrite file if it already exists. By default files are overwritten.
+	   If the file exists and can't be overwritten, the original file is not deleted.
+
 
 ## Example input csv
 
