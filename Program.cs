@@ -291,7 +291,7 @@ namespace RenameFromList
                             deleteOldFile = false;
                             break;
                         case "noow":
-                        case "nooverwrite";
+                        case "nooverwrite":
                             overWrite = false;
                             break;
                         default:
