@@ -286,7 +286,7 @@ namespace RenameFromList
             Console.WriteLine("All matching files will be renamed / overwritten, of any file type.");
             Console.WriteLine("");
 
-            ColoredWriteline("RENAMEFROMLIST [file.csv] [/f file.csv] [/d directory] [/cs ,] [/sp _] [/strict or /loose] [/keep]", ColorSuccess);
+            ColoredWriteline("RENAMEFROMLIST [file.csv] [/f file.csv] [/d directory] [/cs ,] [/sp _] [/strict or /loose] [/keep] [/del or /nodel]", ColorSuccess);
             Console.WriteLine("");
 
             ColoredWriteline ("/f       /file       /csv", ColorHighlight);
