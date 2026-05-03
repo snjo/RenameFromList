@@ -28,8 +28,12 @@ namespace RenameFromList
 
             if (args.Length == 0)
             {
-                Console.WriteLine("No CSV file specified, please add the filename as the first argument");
-                Console.WriteLine("Use /? for more information");
+                ColoredWriteline("No CSV file specified, please add the filename as the first argument.\n" +
+                    "Use /? for help.", ColorError);
+                ShowHelpInfo();
+
+                Console.WriteLine("Press any key to continue");
+                Console.ReadKey();
                 Environment.Exit(1);
             }
 
