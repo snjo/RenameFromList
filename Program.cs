@@ -132,14 +132,14 @@ namespace RenameFromList
                     bool matchFound = false;
                     if (matchPartialNames)
                     {
-                        if (foundFileNoExtension.Contains(originalName))
+                        if (foundFileNoExtension.Contains(originalName, StringComparison.InvariantCultureIgnoreCase))
                         {
                             matchFound = true;
                         }
                     }
                     else
                     {
-                        if (foundFileNoExtension.Equals(originalName))
+                        if (foundFileNoExtension.Equals(originalName, StringComparison.InvariantCultureIgnoreCase))
                         {
                             matchFound = true;
                         }
