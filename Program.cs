@@ -107,6 +107,7 @@ namespace RenameFromList
                 foreach (string file in filesInDirectory)
                 {
                     string foundFileNoExtension = Path.GetFileNameWithoutExtension(file);
+                    string foundFileNoSuffix = Path.GetFileNameWithoutExtension(file);
                     string splitsuffix = "";
                     string extension = Path.GetExtension(file);
 
@@ -123,7 +124,7 @@ namespace RenameFromList
                             {
                                 splitsuffix = foundFileNoExtension[splitLocation..];
                             }
-                            foundFileNoExtension = foundFileNoExtension[..splitLocation];
+                            foundFileNoSuffix = foundFileNoExtension[..splitLocation];
                         }
                         
                         //Console.WriteLine($"Using split, new value: {foundFileNoExtension}, suffix {splitsuffix} ''");
@@ -139,7 +140,7 @@ namespace RenameFromList
                     }
                     else
                     {
-                        if (foundFileNoExtension.Equals(originalName, StringComparison.InvariantCultureIgnoreCase))
+                        if (foundFileNoSuffix.Equals(originalName, StringComparison.InvariantCultureIgnoreCase))
                         {
                             matchFound = true;
                         }
@@ -152,7 +153,8 @@ namespace RenameFromList
                         string newFileNameWithExtension;
                         if (matchPartialNames)
                         {
-                            newFileNameWithExtension = foundFileNoExtension.Replace(originalName, newName) + extension;
+                            newFileNameWithExtension = foundFileNoExtension.Replace(originalName, newName, StringComparison.InvariantCultureIgnoreCase) + extension;
+                            Console.WriteLine($"{newFileNameWithExtension} = {foundFileNoExtension} .Replace {originalName} with {newName} + {extension}");
                         }
                         else
                         {
@@ -201,8 +203,8 @@ namespace RenameFromList
             File.Copy(file, outfile, true);
             if (deleteOldFile)
             {
+                ColoredWriteline($"Renaming {Path.GetFileName(file)} to {newFileNameWithExtension}", ColorSuccess);
                 File.Delete(file);
-                ColoredWriteline($"Renamed {Path.GetFileName(file)} to {newFileNameWithExtension}", ColorSuccess);
             }
             else
             {
