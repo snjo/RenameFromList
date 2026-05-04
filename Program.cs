@@ -130,14 +130,14 @@ namespace RenameFromList
                     }
 
                     bool matchFound = false;
-                    if (matchPartialNames)
+                    if (matchPartialNames) // /loose mode
                     {
                         if (foundFileNoExtension.Contains(originalName, StringComparison.InvariantCultureIgnoreCase))
                         {
                             matchFound = true;
                         }
                     }
-                    else
+                    else // strict mode
                     {
                         if (foundFileNoExtension.Equals(originalName, StringComparison.InvariantCultureIgnoreCase))
                         {
@@ -150,11 +150,11 @@ namespace RenameFromList
                         matchesCount++;
                         //Console.WriteLine($"   Found match in list: {foundFileNoExtension}, extension {extension}");
                         string newFileNameWithExtension;
-                        if (matchPartialNames)
+                        if (matchPartialNames) // /loose mode
                         {
                             newFileNameWithExtension = foundFileNoExtension.Replace(originalName, newName) + extension;
                         }
-                        else
+                        else // strict mode
                         {
                             newFileNameWithExtension = newName + splitsuffix + extension;
                         }
@@ -343,14 +343,15 @@ namespace RenameFromList
             Console.WriteLine("");
 
             ColoredWriteline("/loose", ColorHighlight);
-            Console.WriteLine("   Will match and replace any file containing the OLD name with the NEW name, keeping any prefix and suffix\n" +
-                              "   Split symbol is ignored. ( Using String.Contains ).");
-            ColoredWriteline("   Ex: aaa-OLD-bbb.txt > aaa-NEW-bbb.txt", ColorExample);
+            Console.WriteLine("   Will match and replace any file containing the OLD name with the NEW name, keeping any prefix and suffix");
+            Console.WriteLine("   ( Using String.Contains )");
+            ColoredWriteline("    Ex: aaa-OLD-bbb.txt > aaa-NEW-bbb.txt", ColorExample);
             Console.WriteLine("");
 
             ColoredWriteline("/strict", ColorHighlight);
-            Console.WriteLine("   Will only match files using the exact name. Split symbols can be used. ( Using String.Equals )");
-            ColoredWriteline("   Ex: Ex: OLD.txt > NEW.txt. If using split '_' : OLD_suffix.txt > NEW.txt", ColorExample);
+            Console.WriteLine("   Will only match files using the exact name. Split symbols can be used.");
+            Console.WriteLine("   ( Using String.Equals )");
+            ColoredWriteline ("   Ex: OLD.txt > NEW.txt. If using split '_' : OLD_suffix.txt > NEW.txt", ColorExample);
             Console.WriteLine("");
 
             ColoredWriteline("/keep    /keepsuffix", ColorHighlight);
