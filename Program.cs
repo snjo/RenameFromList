@@ -336,23 +336,26 @@ namespace RenameFromList
             Console.WriteLine("   Symbol used in the CSV to separate values, Default is comma");
             Console.WriteLine("");
 
-            ColoredWriteline ("/sp      /split", ColorHighlight);
+            ColoredWriteline("/sp      /split", ColorHighlight);
             Console.WriteLine("   Split Symbol, used in file names to indicate a suffix, will match files with the first part of the name,\n" +
-                              "   ignoring the suffix" +
-                              "   Ex: If the symbol is _, F01_01.pdf will be treated as F01.pdf");
+                              "   ignoring the suffix");
+            ColoredWriteline("   Ex: If the symbol is _, F01_01.pdf will be treated as F01.pdf", ColorExample);
             Console.WriteLine("");
 
-            ColoredWriteline ("/loose", ColorHighlight);
+            ColoredWriteline("/loose", ColorHighlight);
             Console.WriteLine("   Will match and replace any file containing the OLD name with the NEW name, keeping any prefix and suffix\n" +
-                              "   (split symbol is ignored)");
+                              "   Split symbol is ignored. ( Using String.Contains ).");
+            ColoredWriteline("   Ex: aaa-OLD-bbb.txt > aaa-NEW-bbb.txt", ColorExample);
             Console.WriteLine("");
 
             ColoredWriteline("/strict", ColorHighlight);
-            Console.WriteLine("   Will only match files using the exact name (split symbols can be used)");
+            Console.WriteLine("   Will only match files using the exact name. Split symbols can be used. ( Using String.Equals )");
+            ColoredWriteline("   Ex: Ex: OLD.txt > NEW.txt. If using split '_' : OLD_suffix.txt > NEW.txt", ColorExample);
             Console.WriteLine("");
 
-            ColoredWriteline ("/keep    /keepsuffix", ColorHighlight);
+            ColoredWriteline("/keep    /keepsuffix", ColorHighlight);
             Console.WriteLine("   Keep any suffixes from the Split Symbol while using Strict match mode");
+            ColoredWriteline("   If using split '_' : OLD_suffix.txt > NEW_suffix.txt", ColorExample);
             Console.WriteLine("");
 
             ColoredWriteline("/del", ColorHighlight);
