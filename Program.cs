@@ -148,7 +148,7 @@ namespace RenameFromList
                     if (matchFound)
                     {
                         matchesCount++;
-                        Debug.WriteLine($"Found match in list: {foundFileNoExtension}, extension {extension}");
+                        //Console.WriteLine($"   Found match in list: {foundFileNoExtension}, extension {extension}");
                         string newFileNameWithExtension;
                         if (matchPartialNames)
                         {
@@ -158,6 +158,8 @@ namespace RenameFromList
                         {
                             newFileNameWithExtension = newName + splitsuffix + extension;
                         }
+
+                        //Console.WriteLine($"   New name: {newFileNameWithExtension}");
 
                         try
                         {
@@ -169,21 +171,16 @@ namespace RenameFromList
                                 if (overWrite)
                                 {
                                     ColoredWriteline($"File already exists {newFileNameWithExtension}, overwriting it.", ColorWarning);
-                                    File.Copy(file, outfile, true);
-                                    if (deleteOldFile)
-                                    {
-                                        File.Delete(file);
-                                        ColoredWriteline($"Renamed {Path.GetFileName(file)} to {newFileNameWithExtension}", ColorSuccess);
-                                    }
-                                    else
-                                    {
-                                        ColoredWriteline($"Copied {Path.GetFileName(file)} to {newFileNameWithExtension}", ColorSuccess);
-                                    }
+                                    RenameFile(file, newFileNameWithExtension, outfile);
                                 }
                                 else
                                 {
-                                    ColoredWriteline($"File already exists {newFileNameWithExtension}, skipping it.", ColorWarning);
+                                    ColoredWriteline($"File already exists {newFileNameWithExtension}, skipping it.", ColorError);
                                 }
+                            }
+                            else
+                            {
+                                RenameFile(file, newFileNameWithExtension, outfile);
                             }
                         }
                         catch (Exception ex)
@@ -197,6 +194,20 @@ namespace RenameFromList
                 
             }
 
+        }
+
+        private static void RenameFile(string file, string newFileNameWithExtension, string outfile)
+        {
+            File.Copy(file, outfile, true);
+            if (deleteOldFile)
+            {
+                File.Delete(file);
+                ColoredWriteline($"Renamed {Path.GetFileName(file)} to {newFileNameWithExtension}", ColorSuccess);
+            }
+            else
+            {
+                ColoredWriteline($"Copied {Path.GetFileName(file)} to {newFileNameWithExtension}", ColorSuccess);
+            }
         }
 
         private static void ProcessArguments(string[] commandLineArgs)
