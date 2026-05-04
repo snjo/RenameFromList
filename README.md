@@ -24,12 +24,13 @@ RENAMEFROMLIST [file.csv] [/f file.csv] [/d directory] [/cs ,] [/sp _] [/strict 
 	
 	/loose
 	   Will match and replace any file containing the OLD name with the NEW name, keeping any prefix and suffix
-	   Split symbol is ignored. ( Using String.Contains ).
-	   Ex: aaa-OLD-bbb.txt > aaa-NEW-bbb.txt
+	   ( Using String.Contains )
+	    Ex: aaa-OLD-bbb.txt > aaa-NEW-bbb.txt
 	
 	/strict
-	   Will only match files using the exact name. Split symbols can be used. ( Using String.Equals )
-	   Ex: Ex: OLD.txt > NEW.txt. If using split '_' : OLD_suffix.txt > NEW.txt
+	   Will only match files using the exact name. Split symbols can be used.
+	   ( Using String.Equals )
+	   Ex: OLD.txt > NEW.txt. If using split '_' : OLD_suffix.txt > NEW.txt
 	
 	/keep    /keepsuffix
 	   Keep any suffixes from the Split Symbol while using Strict match mode
