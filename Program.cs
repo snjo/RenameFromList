@@ -131,14 +131,14 @@ namespace RenameFromList
                     }
 
                     bool matchFound = false;
-                    if (matchPartialNames)
+                    if (matchPartialNames) // /loose mode
                     {
                         if (foundFileNoExtension.Contains(originalName, StringComparison.InvariantCultureIgnoreCase))
                         {
                             matchFound = true;
                         }
                     }
-                    else
+                    else // strict mode
                     {
                         if (foundFileNoSuffix.Equals(originalName, StringComparison.InvariantCultureIgnoreCase))
                         {
@@ -151,12 +151,12 @@ namespace RenameFromList
                         matchesCount++;
                         //Console.WriteLine($"   Found match in list: {foundFileNoExtension}, extension {extension}");
                         string newFileNameWithExtension;
-                        if (matchPartialNames)
+                        if (matchPartialNames) // /loose mode
                         {
                             newFileNameWithExtension = foundFileNoExtension.Replace(originalName, newName, StringComparison.InvariantCultureIgnoreCase) + extension;
                             Console.WriteLine($"{newFileNameWithExtension} = {foundFileNoExtension} .Replace {originalName} with {newName} + {extension}");
                         }
-                        else
+                        else // strict mode
                         {
                             newFileNameWithExtension = newName + splitsuffix + extension;
                         }
@@ -338,23 +338,27 @@ namespace RenameFromList
             Console.WriteLine("   Symbol used in the CSV to separate values, Default is comma");
             Console.WriteLine("");
 
-            ColoredWriteline ("/sp      /split", ColorHighlight);
+            ColoredWriteline("/sp      /split", ColorHighlight);
             Console.WriteLine("   Split Symbol, used in file names to indicate a suffix, will match files with the first part of the name,\n" +
-                              "   ignoring the suffix" +
-                              "   Ex: If the symbol is _, F01_01.pdf will be treated as F01.pdf");
+                              "   ignoring the suffix");
+            ColoredWriteline("   Ex: If the symbol is _, F01_01.pdf will be treated as F01.pdf", ColorExample);
             Console.WriteLine("");
 
-            ColoredWriteline ("/loose", ColorHighlight);
-            Console.WriteLine("   Will match and replace any file containing the OLD name with the NEW name, keeping any prefix and suffix\n" +
-                              "   (split symbol is ignored)");
+            ColoredWriteline("/loose", ColorHighlight);
+            Console.WriteLine("   Will match and replace any file containing the OLD name with the NEW name, keeping any prefix and suffix");
+            Console.WriteLine("   ( Using String.Contains )");
+            ColoredWriteline("    Ex: aaa-OLD-bbb.txt > aaa-NEW-bbb.txt", ColorExample);
             Console.WriteLine("");
 
             ColoredWriteline("/strict", ColorHighlight);
-            Console.WriteLine("   Will only match files using the exact name (split symbols can be used)");
+            Console.WriteLine("   Will only match files using the exact name. Split symbols can be used.");
+            Console.WriteLine("   ( Using String.Equals )");
+            ColoredWriteline ("   Ex: OLD.txt > NEW.txt. If using split '_' : OLD_suffix.txt > NEW.txt", ColorExample);
             Console.WriteLine("");
 
-            ColoredWriteline ("/keep    /keepsuffix", ColorHighlight);
+            ColoredWriteline("/keep    /keepsuffix", ColorHighlight);
             Console.WriteLine("   Keep any suffixes from the Split Symbol while using Strict match mode");
+            ColoredWriteline("   If using split '_' : OLD_suffix.txt > NEW_suffix.txt", ColorExample);
             Console.WriteLine("");
 
             ColoredWriteline("/del", ColorHighlight);
