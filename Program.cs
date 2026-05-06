@@ -380,11 +380,17 @@ namespace RenameFromList
             ColoredWriteline("workfile-AA,delivery-AA", ColorExample);
             ColoredWriteline("workfile-BB,delivery-BB", ColorExample);
             Console.WriteLine("");
-            ColoredWriteline("Rename result, using split symbol argument _:", ColorHighlight);
-            ColoredWriteline("RENAMEFROMLIST.EXE example.csv , _", ColorExample);
+            ColoredWriteline("Result, using strict matching and split symbol argument _:", ColorHighlight);
+            ColoredWriteline("RENAMEFROMLIST.EXE /f example.csv /strict /split _", ColorExample);
             ColoredWriteline("workfile-AA.docx        > delivery-AA.docx", ColorExample);
             ColoredWriteline("workfile-AA.pdf         > delivery-AA.pdf", ColorExample);
             ColoredWriteline("workfile-BB_1234567.txt > delivery-BB.txt", ColorExample);
+            Console.WriteLine("");
+            ColoredWriteline("Result using loose matching mode (text replace):", ColorHighlight);
+            ColoredWriteline("RENAMEFROMLIST.EXE /f example.csv /loose", ColorExample);
+            ColoredWriteline("workfile-AA.docx        > delivery-AA.docx", ColorExample);
+            ColoredWriteline("pre-workfile-AA-01.pdf  > pre-delivery-AA-01.pdf", ColorExample);
+            ColoredWriteline("workfile-BB_1234567.txt > delivery-BB_1234567.txt", ColorExample);
             Console.WriteLine("");
         }
 

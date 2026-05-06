@@ -48,14 +48,18 @@ RENAMEFROMLIST [file.csv] [/f file.csv] [/d directory] [/cs ,] [/sp _] [/strict 
 
 
 ## Example input csv
-
 	OLDNAME,NEWNAME
 	workfile-AA,delivery-AA
 	workfile-BB,delivery-BB
 
-## Rename result, using split symbol argument _:
-
-	RENAMEFROMLIST.EXE example.csv , _
+## Result, using strict matching and split symbol argument _:
+	RENAMEFROMLIST.EXE /f example.csv /strict /split _
 	workfile-AA.docx        > delivery-AA.docx
 	workfile-AA.pdf         > delivery-AA.pdf
 	workfile-BB_1234567.txt > delivery-BB.txt
+
+## Result using loose matching mode (text replace):
+	RENAMEFROMLIST.EXE /f example.csv /loose
+	workfile-AA.docx        > delivery-AA.docx
+	pre-workfile-AA-01.pdf  > pre-delivery-AA-01.pdf
+	workfile-BB_1234567.txt > delivery-BB_1234567.txt
